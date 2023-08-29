@@ -1,44 +1,38 @@
 package com.sparta.level1.entity;
 
 import com.sparta.level1.dto.RequestDto;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+@Entity // JPA가 관리할 수 있는 Entity 클래스 지정
 @Getter
 @Setter
+@Table
 @NoArgsConstructor
-public class Api {
+public class Api extends Timestamped{
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "title", nullable = false)
     private String title;
+    @Column(name = "author", nullable = false)
     private String author;
-    private String pw;
-    private String contents;
-    private String time;
-
-    public Api(Long id, String title, String author, String pw, String contents, String time) {
-        this.id = id;
-        this.title = title;
-        this.author = author;
-        this.pw = pw;
-        this.contents = contents;
-        this.time = time;
-    }
+    @Column(name = "password", nullable = false, unique = true)
+    private String password;
+    @Column(name = "content", nullable = false)
+    private String content;
 
     public Api(RequestDto requestDto) {
-        this.id = requestDto.getId();
         this.title = requestDto.getTitle();
-        this.contents = requestDto.getContents();
         this.author = requestDto.getAuthor();
-        this.pw = requestDto.getPw();
-        this.time = requestDto.getTime();
+        this.password = requestDto.getPassword();
+        this.content = requestDto.getContent();
     }
 
     public void update(RequestDto requestDto) {
-        this.id = requestDto.getId();
         this.title = requestDto.getTitle();
-        this.contents = requestDto.getContents();
+        this.content = requestDto.getContent();
         this.author = requestDto.getAuthor();
-        this.time = requestDto.getTime();
     }
 }

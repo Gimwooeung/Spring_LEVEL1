@@ -2,15 +2,12 @@ package com.sparta.level1.service;
 
 import com.sparta.level1.dto.RequestDto;
 import com.sparta.level1.dto.ResponseDto;
-import com.sparta.level1.dto.ResponseDtoTwo;
 import com.sparta.level1.entity.Api;
 import com.sparta.level1.repository.ApiRepository;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
 
 @Service
 public class ApiService {
@@ -21,62 +18,58 @@ public class ApiService {
     }
 
     public ResponseDto createApi(RequestDto requestDto) {
-        // RequestDto -> Entity //서비스에서 작동
+        // RequestDto -> Entity
         Api api = new Api(requestDto);
-        Calendar cal = Calendar.getInstance();        // getInstance 메소드를 호출해 객체 생성
-        SimpleDateFormat date = new SimpleDateFormat("yyyy년-MM월-dd일-HH시-mm분-ss초"); // 포매팅 설정하기
-        String time = date.format(cal.getTime()); // time이라는 변수에 포매팅한 getTime값을 넣어주기
-        api.setTime(time); // api객체에 넣어주기
-        System.out.println(time);
 
-        // DB 저장 //Repository
-        Api saveapi = apiRepository.save(api);
+        // DB 저장
+        Api saveApi = apiRepository.save(api);
 
         // Entity -> ResponseDto
-        ResponseDto responseDto = new ResponseDto(api);
-        return responseDto;
+        ResponseDto ResponseDto = new ResponseDto(saveApi);
+
+        return ResponseDto;
     }
 
-    public List<ResponseDtoTwo> getAllApi() {
-        // DB 조회
-        return apiRepository.findAll();
+    public List<ResponseDto> getAllApi() {
+        // DB 모두조회
+        return apiRepository.findAllByOrderByModifiedAtDesc().stream().map(ResponseDto::new).toList();
     }
 
-    public List<ResponseDtoTwo> getApiSelect(long id) {
-        // DB 조회
-        return getAllApi().stream().filter(a->a.getTime().equals(apiRepository.findById(id).getTime())).collect(Collectors.toList());
-    }
-
-
-    public RequestDto updateApi(Long id, RequestDto requestDto) {
-                //해당 내용이 DB에 존재하는지 확인
-
-        Api api = apiRepository.findById(id);
+    public ResponseDto getApiSelect(Long id) {
+        // DB 선택조회
+        Api api = apiRepository.findById(id).orElse(null);
         if (api != null) {
-            // Api 내용 수정하기
-            apiRepository.update(id, requestDto);
+            return new ResponseDto(api); // ResponseDto 생성자를 활용하여 엔티티를 DTO로 변환
+        }
+        return null; // 또는 원하는 에러 처리
+    }
 
-            return requestDto;
+    @Transactional
+    public Api updateApi(Long id, RequestDto requestDto) {
+        Api api = findApi(id);
+
+        // memo 내용 수정
+        api.update(requestDto);
+
+        return api;
+    }
+
+
+    public boolean deleteApi(Long id, String password) {
+        Api api = findApi(id);
+
+        if (api.getPassword().equals(password)) {
+            apiRepository.delete(api);
+            return true;
         } else {
-            throw new IllegalArgumentException("선택한 내용은 존재하지 않습니다");
+            return false;
         }
     }
-    public Map<String, Object> deleteApi(Long id) {
-        Map<String, Object> response = new HashMap<>();
 
-        // 해당 내용이 DB에 존재하는지 확인
-        Api api = apiRepository.findById(id);
-        if (api != null) {
-            // Api 내용 삭제
-            apiRepository.delete(id);
-
-            response.put("success", true);
-            return response;
-        } else {
-            response.put("success", false);
-            response.put("message", "선택한 내용은 존재하지 않습니다.");
-            return response;
-        }
+    private Api findApi(Long id) {
+        return apiRepository.findById(id).orElseThrow(() ->
+                new IllegalArgumentException("선택한 메모는 존재하지 않습니다.")
+        );
     }
 }
 

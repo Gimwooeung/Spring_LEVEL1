@@ -3,29 +3,26 @@ package com.sparta.level1.dto;
 import com.sparta.level1.entity.Api;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 public class ResponseDto {
-    private Long id;
-    private String title;
-    private String author;
-    private String pw;
-    private String contents;
-    private String time;
+    private final Long id;
+    private final String title;
+    private final String author;
+//    private final String password;
+    private final String contents;
+    private LocalDateTime createdAt;
+    private LocalDateTime modifiedAt;
 
     public ResponseDto(Api api) {
         this.id = api.getId();
         this.title = api.getTitle();
         this.author = api.getAuthor();
-        this.pw = api.getPw();
-        this.contents = api.getContents();
-        this.time = api.getTime();
+//        this.password = api.getPassword();
+        this.contents = api.getContent();
+        this.createdAt = api.getCreatedAt();
+        this.modifiedAt = api.getModifiedAt();
     }
-    public ResponseDto(Long id, String title, String author, String pw, String contetns, String time) {
-        this.id = id;
-        this.title = title;
-        this.author = author;
-        this.pw = pw;
-        this.contents = contetns;
-        this.time = time;
-    }
+
 }
